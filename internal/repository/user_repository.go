@@ -35,6 +35,14 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.
 	return &user, nil
 }
 
+func (r *userRepository) GetByGoogleID(ctx context.Context, googleID string) (*domain.User, error) {
+	var user domain.User
+	if err := r.db.WithContext(ctx).Where("google_id = ?", googleID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *userRepository) Fetch(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
 	if err := r.db.WithContext(ctx).Find(&users).Error; err != nil {
