@@ -54,5 +54,5 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 
 	// Create a dummy session cookie for now
 	c.SetCookie("user_id", user.GoogleID, 3600, "/", "localhost", false, true)
-	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000")
+	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/hello")
 }
