@@ -34,11 +34,12 @@ func main() {
 	}
 
 	// 3. Setup Layers
+	transactionManager := repository.NewTransactionManager(database.DB)
 	userRepo := repository.NewUserRepository(database.DB)
-	userUsecase := usecase.NewUserUsecase(userRepo, 2*time.Second)
+	userUsecase := usecase.NewUserUsecase(userRepo, transactionManager, 2*time.Second)
 
 	questionnaireRepo := repository.NewQuestionnaireRepository(database.DB)
-	questionnaireUsecase := usecase.NewQuestionnaireUsecase(questionnaireRepo, userRepo, 2*time.Second)
+	questionnaireUsecase := usecase.NewQuestionnaireUsecase(questionnaireRepo, userRepo, transactionManager, 2*time.Second)
 
 	// 4. Setup Router
 	r := gin.Default()

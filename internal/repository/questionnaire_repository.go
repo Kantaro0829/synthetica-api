@@ -16,13 +16,13 @@ func NewQuestionnaireRepository(conn *gorm.DB) domain.QuestionnaireRepository {
 }
 
 func (r *questionnaireRepository) Store(ctx context.Context, q *domain.Questionnaire) error {
-	return r.Conn.Create(q).Error
+	return getDB(ctx, r.Conn).WithContext(ctx).Create(q).Error
 }
 
 func (r *questionnaireRepository) GetByUserID(ctx context.Context, userID uint) (*domain.Questionnaire, error) {
 	var q domain.Questionnaire
 	// Find the FIRST answer. If multiple, we just take one.
-	if err := r.Conn.Where("user_id = ?", userID).First(&q).Error; err != nil {
+	if err := getDB(ctx, r.Conn).WithContext(ctx).Where("user_id = ?", userID).First(&q).Error; err != nil {
 		return nil, err
 	}
 	return &q, nil

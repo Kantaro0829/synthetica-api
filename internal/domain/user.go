@@ -23,6 +23,7 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	GetByGoogleID(ctx context.Context, googleID string) (*User, error)
 	Fetch(ctx context.Context) ([]User, error)
+	Update(ctx context.Context, user *User) error
 }
 
 type UserUsecase interface {

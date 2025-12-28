@@ -13,12 +13,14 @@ import (
 
 type userUsecase struct {
 	userRepo       domain.UserRepository
+	transaction    domain.TransactionManager
 	contextTimeout time.Duration
 }
 
-func NewUserUsecase(userRepo domain.UserRepository, timeout time.Duration) domain.UserUsecase {
+func NewUserUsecase(userRepo domain.UserRepository, transaction domain.TransactionManager, timeout time.Duration) domain.UserUsecase {
 	return &userUsecase{
 		userRepo:       userRepo,
+		transaction:    transaction,
 		contextTimeout: timeout,
 	}
 }
@@ -77,29 +79,44 @@ func (u *userUsecase) LoginWithGoogleOAuth(ctx context.Context, token *oauth2.To
 	name := payload.Name
 	googleID := payload.ID
 
-	// 2. Check if user exists by Google ID
-	user, err := u.userRepo.GetByGoogleID(ctx, googleID)
-	if err == nil {
-		return user, nil
-	}
+	// Wrap in transaction
+	var finalUser *domain.User
+	err = u.transaction.Do(ctx, func(c context.Context) error {
+		// 2. Check if user exists by Google ID
+		user, err := u.userRepo.GetByGoogleID(c, googleID)
+		if err == nil {
+			finalUser = user
+			return nil
+		}
 
-	// 3. Check if user exists by Email (to link)
-	user, err = u.userRepo.GetByEmail(ctx, email)
-	if err == nil {
-		user.GoogleID = googleID
-		return user, nil
-	}
+		// 3. Check if user exists by Email (to link)
+		user, err = u.userRepo.GetByEmail(c, email)
+		if err == nil {
+			user.GoogleID = googleID
 
-	// 4. Create new User
-	newUser := &domain.User{
-		Name:     name,
-		Email:    email,
-		GoogleID: googleID,
-	}
-	err = u.userRepo.Create(ctx, newUser)
+			if err := u.userRepo.Update(c, user); err != nil {
+				return err
+			}
+			finalUser = user
+			return nil
+		}
+
+		// 4. Create new User
+		newUser := &domain.User{
+			Name:     name,
+			Email:    email,
+			GoogleID: googleID,
+		}
+		if err = u.userRepo.Create(c, newUser); err != nil {
+			return err
+		}
+		finalUser = newUser
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	return newUser, nil
+	return finalUser, nil
 }

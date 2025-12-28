@@ -16,12 +16,16 @@ func NewUserRepository(db *gorm.DB) domain.UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
-	return r.db.WithContext(ctx).Create(user).Error
+	return getDB(ctx, r.db).WithContext(ctx).Create(user).Error
+}
+
+func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
+	return getDB(ctx, r.db).WithContext(ctx).Save(user).Error
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id uint) (*domain.User, error) {
 	var user domain.User
-	if err := r.db.WithContext(ctx).First(&user, id).Error; err != nil {
+	if err := getDB(ctx, r.db).WithContext(ctx).First(&user, id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -29,7 +33,7 @@ func (r *userRepository) GetByID(ctx context.Context, id uint) (*domain.User, er
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+	if err := getDB(ctx, r.db).WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -37,7 +41,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.
 
 func (r *userRepository) GetByGoogleID(ctx context.Context, googleID string) (*domain.User, error) {
 	var user domain.User
-	if err := r.db.WithContext(ctx).Where("google_id = ?", googleID).First(&user).Error; err != nil {
+	if err := getDB(ctx, r.db).WithContext(ctx).Where("google_id = ?", googleID).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -45,7 +49,7 @@ func (r *userRepository) GetByGoogleID(ctx context.Context, googleID string) (*d
 
 func (r *userRepository) Fetch(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
-	if err := r.db.WithContext(ctx).Find(&users).Error; err != nil {
+	if err := getDB(ctx, r.db).WithContext(ctx).Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
