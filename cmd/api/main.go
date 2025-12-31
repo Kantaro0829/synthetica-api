@@ -28,7 +28,7 @@ func main() {
 	config.InitOauth()
 	// Auto Migrate
 
-	err := database.DB.AutoMigrate(&domain.User{}, &domain.Questionnaire{})
+	err := database.DB.AutoMigrate(&domain.User{}, &domain.Questionnaire{}, &domain.Story{}, &domain.Comment{}, &domain.Like{})
 	if err != nil {
 		logger.Log.Fatal("failed to migrate database: " + err.Error())
 	}
@@ -40,6 +40,9 @@ func main() {
 
 	questionnaireRepo := repository.NewQuestionnaireRepository(database.DB)
 	questionnaireUsecase := usecase.NewQuestionnaireUsecase(questionnaireRepo, userRepo, transactionManager, 2*time.Second)
+
+	storyRepo := repository.NewStoryRepository(database.DB)
+	storyUsecase := usecase.NewStoryUsecase(storyRepo, 2*time.Second)
 
 	// 4. Setup Router
 	r := gin.Default()
@@ -70,6 +73,7 @@ func main() {
 	http.NewUserHandler(r, userUsecase)
 	http.NewAuthHandler(r, userUsecase)
 	http.NewQuestionnaireHandler(r, questionnaireUsecase)
+	http.NewStoryHandler(r, storyUsecase)
 
 	// 5. Run
 	if err := r.Run(":8080"); err != nil {

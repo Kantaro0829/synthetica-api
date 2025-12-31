@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 	"synthetica/internal/config"
 	"synthetica/internal/domain"
 
@@ -53,6 +54,8 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 	// Let's redirect to home and expect the user to be "logged in" via cookie.
 
 	// Create a dummy session cookie for now
-	c.SetCookie("user_id", user.GoogleID, 3600, "/", "localhost", false, true)
+	// Changing to internal ID so it matches the DB ID used for foreign keys.
+	// Changing HttpOnly to false so client-side JS can read it for this MVP.
+	c.SetCookie("user_id", strconv.Itoa(int(user.ID)), 3600, "/", "localhost", false, false)
 	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/hello")
 }
