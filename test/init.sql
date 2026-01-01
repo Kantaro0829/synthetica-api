@@ -1,0 +1,46 @@
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255),
+    google_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS stories (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    detail TEXT,
+    user_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS questionnaires (
+    id SERIAL PRIMARY KEY,
+    user_id INT,
+    answer INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_q FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS comments (
+    id SERIAL PRIMARY KEY,
+    story_id INT,
+    from_user_id INT,
+    text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_story_c FOREIGN KEY(story_id) REFERENCES stories(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_c FOREIGN KEY(from_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS likes (
+    id SERIAL PRIMARY KEY,
+    story_id INT,
+    from_user_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_story_l FOREIGN KEY(story_id) REFERENCES stories(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_l FOREIGN KEY(from_user_id) REFERENCES users(id) ON DELETE CASCADE
+);

@@ -112,6 +112,23 @@ curl http://localhost:8080/users
 curl http://localhost:8080/users/1
 ```
 
+## 🧪 How to Test
+
+We use `go test` and Docker to run integration tests for the repository layer.
+
+### 1. Start Test Database
+Navigate to the `test` directory and start the test database:
+```bash
+cd test
+docker-compose up -d
+```
+
+### 2. Run Tests
+Run all repository tests:
+```bash
+go test -v ./internal/repository/...
+```
+
 ## ❓ Troubleshooting
 
 - **"Connection Refused"**: Make sure your Docker container is running (`docker compose ps`).
